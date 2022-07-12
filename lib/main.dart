@@ -5,12 +5,6 @@ import 'dart:io';
 
 void main() async {
   setupWindow();
-  var server = await HttpServer.bind(InternetAddress.anyIPv4, 8844);
-  await server.forEach((HttpRequest request) {
-    request.response.write('Hello, world bomber!');
-    request.response.close();
-    // From here modify a stateful widget
-  });
   runApp(const LANSend());
 }
 
@@ -44,6 +38,7 @@ class LANSend extends StatelessWidget {
         primarySwatch: Colors.grey,
       ),
       home: const MyScaffold(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -89,8 +84,63 @@ class MyScaffold extends StatelessWidget {
               child: ElevatedButton(
                   onPressed: () {}, child: const Text('Select File'))),
           ElevatedButton(onPressed: () {}, child: const Text('SEND')),
+          const Counter()
         ],
       ),
+    );
+  }
+}
+
+class Counter extends StatefulWidget {
+  // This class is the configuration for the state.
+  // It holds the values (in this case nothing) provided
+  // by the parent and used by the build  method of the
+  // State. Fields in a Widget subclass are always marked
+  // "final".
+
+  const Counter({super.key});
+
+  @override
+  State<Counter> createState() => _CounterState();
+}
+
+class _CounterState extends State<Counter> {
+  int _counter = 0;
+  late HttpServer server;
+
+  void _initServer() async {
+    server = await HttpServer.bind(InternetAddress.anyIPv4, 8844);
+    server.forEach((HttpRequest request) {
+      request.response.write('Hello, world bomber!');
+      request.response.close();
+      _increment();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initServer();
+  }
+
+  void _increment() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        ElevatedButton(
+          onPressed: _increment,
+          child: const Text('Increment'),
+        ),
+        const SizedBox(width: 16),
+        Text('Count: $_counter'),
+      ],
     );
   }
 }
